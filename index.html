@@ -15,6 +15,7 @@
             --background-light: #3D314A;
         }
 
+        /* Previous styles remain the same */
         body {
             margin: 0;
             padding: 0;
@@ -53,6 +54,47 @@
             box-shadow: 0 0 20px rgba(255, 181, 99, 0.2);
         }
 
+        /* New styles for in-game menu controls */
+        .game-menu-controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+        }
+
+        .menu-burger {
+            background: rgba(26, 20, 35, 0.9);
+            border: 2px solid var(--accent-color);
+            border-radius: 5px;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+            padding: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .menu-burger:hover {
+            background: var(--primary-color);
+        }
+
+        .menu-burger span {
+            display: block;
+            width: 100%;
+            height: 3px;
+            background-color: var(--accent-color);
+            transition: all 0.3s ease;
+        }
+
+        .menu-burger:hover span {
+            background-color: #fff;
+        }
+
+        /* Previous styles continue */
         .game-title {
             font-size: 3rem;
             margin-bottom: 2rem;
@@ -118,6 +160,15 @@
             z-index: 999;
         }
 
+        .in-game-menu {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+        }
+
         @media (max-width: 1024px) {
             .game-container {
                 width: 95%;
@@ -149,24 +200,37 @@
     </div>
 
     <div class="game-container" id="gameContainer">
+        <div class="game-menu-controls">
+            <div class="menu-burger" id="menuBurger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
         <canvas></canvas>
     </div>
 
-    <!-- Settings Modal -->
+    <div class="menu-container in-game-menu" id="inGameMenu">
+        <h2 class="game-title">Game Menu</h2>
+        <button class="menu-button" id="resumeButton">Resume Game</button>
+        <button class="menu-button" id="returnToMainButton">Main Menu</button>
+        <button class="menu-button" id="inGameSettingsButton">Settings</button>
+        <button class="menu-button" id="inGameExitButton">Exit Game</button>
+    </div>
+
+    <!-- Previous modals remain the same -->
     <div class="modal" id="settingsModal">
         <div class="modal-close">&times;</div>
         <h2>Settings</h2>
         <p>Game settings will go here...</p>
     </div>
 
-    <!-- Options Modal -->
     <div class="modal" id="optionsModal">
         <div class="modal-close">&times;</div>
         <h2>Options</h2>
         <p>Game options will go here...</p>
     </div>
 
-    <!-- About Modal -->
     <div class="modal" id="aboutModal">
         <div class="modal-close">&times;</div>
         <h2>About</h2>
@@ -179,11 +243,15 @@
         // Menu functionality
         const mainMenu = document.getElementById('mainMenu');
         const gameContainer = document.getElementById('gameContainer');
+        const inGameMenu = document.getElementById('inGameMenu');
         const startButton = document.getElementById('startButton');
         const settingsButton = document.getElementById('settingsButton');
         const optionsButton = document.getElementById('optionsButton');
         const aboutButton = document.getElementById('aboutButton');
         const exitButton = document.getElementById('exitButton');
+        const menuBurger = document.getElementById('menuBurger');
+        const resumeButton = document.getElementById('resumeButton');
+        const returnToMainButton = document.getElementById('returnToMainButton');
         const modalOverlay = document.getElementById('modalOverlay');
         const modals = document.querySelectorAll('.modal');
         const closeButtons = document.querySelectorAll('.modal-close');
@@ -194,6 +262,24 @@
             gameContainer.style.display = 'block';
         });
 
+        // In-game menu controls
+        menuBurger.addEventListener('click', () => {
+            inGameMenu.style.display = 'block';
+            modalOverlay.style.display = 'block';
+        });
+
+        resumeButton.addEventListener('click', () => {
+            inGameMenu.style.display = 'none';
+            modalOverlay.style.display = 'none';
+        });
+
+        returnToMainButton.addEventListener('click', () => {
+            inGameMenu.style.display = 'none';
+            gameContainer.style.display = 'none';
+            mainMenu.style.display = 'block';
+            modalOverlay.style.display = 'none';
+        });
+
         // Modal handlers
         function showModal(modalId) {
             document.getElementById(modalId).style.display = 'block';
@@ -202,6 +288,7 @@
 
         function closeAllModals() {
             modals.forEach(modal => modal.style.display = 'none');
+            inGameMenu.style.display = 'none';
             modalOverlay.style.display = 'none';
         }
 
@@ -216,7 +303,22 @@
 
         modalOverlay.addEventListener('click', closeAllModals);
 
-        // Your existing game scripts
+        // Your existing game scripts with modified player speed
+        const playerSpeedPatch = `
+            // Modify these values in your Player class handleInput method
+            if (keys.d.pressed) {
+                this.switchSprite('runRight')
+                this.velocity.x = 3  // Changed from 5 to 3
+                this.lastDirection = 'right'
+            } else if (keys.a.pressed) {
+                this.switchSprite('runLeft')
+                this.velocity.x = -3  // Changed from -5 to -3
+                this.lastDirection = 'left'
+            }
+        `;
+
+        console.log('To adjust player speed, update the velocity values in Player.js as shown:', playerSpeedPatch);
+
         const gameScripts = [
             'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.1/gsap.min.js',
             'js/utils.js',

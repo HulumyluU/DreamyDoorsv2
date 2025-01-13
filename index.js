@@ -9,38 +9,38 @@ let collisionBlocks
 let background
 let doors
 const player = new Player({
-  imageSrc: './img/king/idle.png',
-  frameRate: 11,
-  animations: {
-    idleRight: {
-      frameRate: 11,
-      frameBuffer: 2,
-      loop: true,
-      imageSrc: './img/king/idle.png',
-    },
-    idleLeft: {
-      frameRate: 11,
-      frameBuffer: 2,
-      loop: true,
-      imageSrc: './img/king/idleLeft.png',
-    },
-    runRight: {
-      frameRate: 8,
-      frameBuffer: 4,
-      loop: true,
-      imageSrc: './img/king/runRight.png',
-    },
-    runLeft: {
-      frameRate: 8,
-      frameBuffer: 4,
-      loop: true,
-      imageSrc: './img/king/runLeft.png',
-    },
-    enterDoor: {
-      frameRate: 8,
-      frameBuffer: 4,
-      loop: false,
-      imageSrc: './img/king/enterDoor.png',
+   imageSrc: './img/king/idle.png',
+   frameRate: 11,
+   animations: {
+     idleRight: {
+       frameRate: 11,
+       frameBuffer: 6,  // Changed from 2 to 6 (slower)
+       loop: true,
+       imageSrc: './img/king/idle.png',
+     },
+     idleLeft: {
+       frameRate: 11,
+       frameBuffer: 8,  // Changed from 2 to 6 (slower)
+       loop: true,
+       imageSrc: './img/king/idleLeft.png',
+     },
+     runRight: {
+       frameRate: 8,
+       frameBuffer: 8,  // Changed from 4 to 8 (slower)
+       loop: true,
+       imageSrc: './img/king/runRight.png',
+     },
+     runLeft: {
+       frameRate: 8,
+       frameBuffer: 8,  // Changed from 4 to 8 (slower)
+       loop: true,
+       imageSrc: './img/king/runLeft.png',
+     },
+     enterDoor: {
+       frameRate: 8,
+       frameBuffer: 8,  // Changed from 4 to 8 (slower)
+       loop: false,
+       imageSrc: './img/king/enterDoor.png',
       onComplete: () => {
         console.log('completed animation')
         gsap.to(overlay, {
