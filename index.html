@@ -1,20 +1,243 @@
-<style>
-  body {
-    background: black;
-  }
-</style>
-<canvas></canvas>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medieval Platform Game</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap');
 
-<script
-  src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.1/gsap.min.js"
-  integrity="sha512-Mf/xUqfWvDIr+1B6zfnIDIiG7XHzyP/guXUWgV6PgaQoIFeXkJQR5XWh9fqAiCiRCpemabt3naV4jhDWVnuYDQ=="
-  crossorigin="anonymous"
-  referrerpolicy="no-referrer"
-></script>
-<script src="js/utils.js"></script>
-<script src="js/data/collisions.js"></script>
-<script src="js/classes/CollisionBlock.js"></script>
-<script src="js/classes/Sprite.js"></script>
-<script src="js/classes/Player.js"></script>
-<script src="js/eventListeners.js"></script>
-<script src="index.js"></script>
+        :root {
+            --primary-color: #722F37;
+            --secondary-color: #9E2A2B;
+            --accent-color: #FFB563;
+            --background-dark: #1a1423;
+            --background-light: #3D314A;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: radial-gradient(circle, var(--background-light) 0%, var(--background-dark) 100%);
+            font-family: 'MedievalSharp', cursive;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            color: var(--accent-color);
+        }
+
+        .game-container {
+            position: relative;
+            width: 100%;
+            max-width: 1024px;
+            aspect-ratio: 1024/576;
+            display: none;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .menu-container {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(26, 20, 35, 0.95);
+            border: 3px solid var(--accent-color);
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(255, 181, 99, 0.2);
+        }
+
+        .game-title {
+            font-size: 3rem;
+            margin-bottom: 2rem;
+            color: var(--accent-color);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .menu-button {
+            display: block;
+            width: 200px;
+            margin: 1rem auto;
+            padding: 1rem;
+            font-family: 'MedievalSharp', cursive;
+            font-size: 1.2rem;
+            color: var(--accent-color);
+            background: var(--primary-color);
+            border: 2px solid var(--accent-color);
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .menu-button:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .menu-button:active {
+            transform: translateY(0);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(26, 20, 35, 0.98);
+            border: 3px solid var(--accent-color);
+            border-radius: 10px;
+            padding: 2rem;
+            z-index: 1000;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            color: var(--accent-color);
+            font-size: 1.5rem;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 999;
+        }
+
+        @media (max-width: 1024px) {
+            .game-container {
+                width: 95%;
+            }
+        }
+
+        @media (orientation: portrait) and (max-width: 768px) {
+            .game-container {
+                width: 100%;
+            }
+            .game-title {
+                font-size: 2rem;
+            }
+            .menu-button {
+                width: 160px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="menu-container" id="mainMenu">
+        <h1 class="game-title">Medieval Adventure</h1>
+        <button class="menu-button" id="startButton">Start Game</button>
+        <button class="menu-button" id="settingsButton">Settings</button>
+        <button class="menu-button" id="optionsButton">Options</button>
+        <button class="menu-button" id="aboutButton">About</button>
+        <button class="menu-button" id="exitButton">Exit</button>
+    </div>
+
+    <div class="game-container" id="gameContainer">
+        <canvas></canvas>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-close">&times;</div>
+        <h2>Settings</h2>
+        <p>Game settings will go here...</p>
+    </div>
+
+    <!-- Options Modal -->
+    <div class="modal" id="optionsModal">
+        <div class="modal-close">&times;</div>
+        <h2>Options</h2>
+        <p>Game options will go here...</p>
+    </div>
+
+    <!-- About Modal -->
+    <div class="modal" id="aboutModal">
+        <div class="modal-close">&times;</div>
+        <h2>About</h2>
+        <p>A medieval platform adventure game...</p>
+    </div>
+
+    <div class="overlay" id="modalOverlay"></div>
+
+    <script>
+        // Menu functionality
+        const mainMenu = document.getElementById('mainMenu');
+        const gameContainer = document.getElementById('gameContainer');
+        const startButton = document.getElementById('startButton');
+        const settingsButton = document.getElementById('settingsButton');
+        const optionsButton = document.getElementById('optionsButton');
+        const aboutButton = document.getElementById('aboutButton');
+        const exitButton = document.getElementById('exitButton');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modals = document.querySelectorAll('.modal');
+        const closeButtons = document.querySelectorAll('.modal-close');
+
+        // Start game
+        startButton.addEventListener('click', () => {
+            mainMenu.style.display = 'none';
+            gameContainer.style.display = 'block';
+        });
+
+        // Modal handlers
+        function showModal(modalId) {
+            document.getElementById(modalId).style.display = 'block';
+            modalOverlay.style.display = 'block';
+        }
+
+        function closeAllModals() {
+            modals.forEach(modal => modal.style.display = 'none');
+            modalOverlay.style.display = 'none';
+        }
+
+        settingsButton.addEventListener('click', () => showModal('settingsModal'));
+        optionsButton.addEventListener('click', () => showModal('optionsModal'));
+        aboutButton.addEventListener('click', () => showModal('aboutModal'));
+        exitButton.addEventListener('click', () => window.close());
+
+        closeButtons.forEach(button => {
+            button.addEventListener('click', closeAllModals);
+        });
+
+        modalOverlay.addEventListener('click', closeAllModals);
+
+        // Your existing game scripts
+        const gameScripts = [
+            'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.1/gsap.min.js',
+            'js/utils.js',
+            'js/data/collisions.js',
+            'js/classes/CollisionBlock.js',
+            'js/classes/Sprite.js',
+            'js/classes/Player.js',
+            'js/eventListeners.js',
+            'index.js'
+        ];
+
+        gameScripts.forEach(src => {
+            const script = document.createElement('script');
+            script.src = src;
+            if (src.includes('gsap')) {
+                script.integrity = "sha512-Mf/xUqfWvDIr+1B6zfnIDIiG7XHzyP/guXUWgV6PgaQoIFeXkJQR5XWh9fqAiCiRCpemabt3naV4jhDWVnuYDQ==";
+                script.crossOrigin = "anonymous";
+                script.referrerPolicy = "no-referrer";
+            }
+            document.body.appendChild(script);
+        });
+    </script>
+</body>
+</html>
