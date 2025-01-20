@@ -4,10 +4,32 @@ const c = canvas.getContext('2d')
 canvas.width = 1024 // 1024
 canvas.height = 64 * 9 // 576
 
+const key = {
+   w: {
+     pressed: false,
+   },
+   a: {
+     pressed: false,
+   },
+   d: {
+     pressed: false,
+   }
+ }
 let parsedCollisions
 let collisionBlocks
 let background
 let doors
+
+const gameKey = new Sprite({
+   position: {
+     x: 400,
+     y: 300,
+   },
+   imageSrc: './img/key.png',
+   frameRate: 1,
+   frameBuffer: 1,
+ })
+
 const player = new Player({
    imageSrc: './img/king/idle.png',
    frameRate: 11,
@@ -96,36 +118,43 @@ let levels = {
   },
   2: {
     init: () => {
-      parsedCollisions = collisionsLevel2.parse2D()
-      collisionBlocks = parsedCollisions.createObjectsFrom2D()
-      player.collisionBlocks = collisionBlocks
-      player.position.x = 96
-      player.position.y = 140
-
-      if (player.currentAnimation) player.currentAnimation.isActive = false
-
-      background = new Sprite({
-        position: {
-          x: 0,
-          y: 0,
-        },
-        imageSrc: './img/backgroundLevel2.png',
-      })
-
-      doors = [
-        new Sprite({
-          position: {
-            x: 772.0,
-            y: 336,
-          },
-          imageSrc: './img/doorOpen.png',
-          frameRate: 5,
-          frameBuffer: 5,
-          loop: false,
-          autoplay: false,
-        }),
-      ]
-    },
+         parsedCollisions = collisionsLevel2.parse2D()
+         collisionBlocks = parsedCollisions.createObjectsFrom2D()
+         player.collisionBlocks = collisionBlocks
+         player.position.x = 96
+         player.position.y = 140
+         player.hasKey = false // Reset key status
+   
+         if (player.currentAnimation) player.currentAnimation.isActive = false
+   
+         background = new Sprite({
+           position: {
+             x: 0,
+             y: 0,
+           },
+           imageSrc: './img/backgroundLevel2.png',
+         })
+   
+         // Add key to level 2
+         gameKey.position = {
+           x: 400,
+           y: 300,
+         }
+   
+         doors = [
+           new Sprite({
+             position: {
+               x: 772.0,
+               y: 336,
+             },
+             imageSrc: './img/doorOpen.png',
+             frameRate: 5,
+             frameBuffer: 5,
+             loop: false,
+             autoplay: false,
+           }),
+         ]
+       },
   },
   3: {
     init: () => {
@@ -178,27 +207,40 @@ const overlay = {
 }
 
 function animate() {
-  window.requestAnimationFrame(animate)
-
-  background.draw()
-  // collisionBlocks.forEach((collisionBlock) => {
-  //   collisionBlock.draw()
-  // })
-
-  doors.forEach((door) => {
-    door.draw()
-  })
-
-  player.handleInput(keys)
-  player.draw()
-  player.update()
-
-  c.save()
-  c.globalAlpha = overlay.opacity
-  c.fillStyle = 'black'
-  c.fillRect(0, 0, canvas.width, canvas.height)
-  c.restore()
-}
+   window.requestAnimationFrame(animate)
+ 
+   background.draw()
+ 
+   doors.forEach((door) => {
+     door.draw()
+   })
+ 
+   // Draw key in level 2 if not collected
+   if (level === 2 && !player.hasKey) {
+     gameKey.draw()
+     
+     // Check for key collection
+     if (
+       player.hitbox.position.x + player.hitbox.width >= gameKey.position.x &&
+       player.hitbox.position.x <= gameKey.position.x + gameKey.width &&
+       player.hitbox.position.y + player.hitbox.height >= gameKey.position.y &&
+       player.hitbox.position.y <= gameKey.position.y + gameKey.height
+     ) {
+       player.hasKey = true
+       console.log('Key collected!')
+     }
+   }
+ 
+   player.handleInput(key)
+   player.draw()
+   player.update()
+ 
+   c.save()
+   c.globalAlpha = overlay.opacity
+   c.fillStyle = 'black'
+   c.fillRect(0, 0, canvas.width, canvas.height)
+   c.restore()
+ }
 
 levels[level].init()
 animate()

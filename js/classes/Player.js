@@ -1,23 +1,24 @@
 class Player extends Sprite {
-  constructor({ collisionBlocks = [], imageSrc, frameRate, animations, loop }) {
-    super({ imageSrc, frameRate, animations, loop })
-    this.position = {
-      x: 200,
-      y: 200,
-    }
+   constructor({ collisionBlocks = [], imageSrc, frameRate, animations, loop }) {
+      super({ imageSrc, frameRate, animations, loop })
+      
+      this.position = {
+         x: 200,
+         y: 200,
+      }
 
-    this.velocity = {
-      x: 0,
-      y: 0,
-    }
+      this.velocity = {
+         x: 0,
+         y: 0,
+      }
 
-    this.sides = {
-      bottom: this.position.y + this.height,
-    }
-    this.gravity = 1
+      this.sides = {
+         bottom: this.position.y + this.height,
+      }
+      this.gravity = 1
 
-    this.collisionBlocks = collisionBlocks
-  }
+      this.collisionBlocks = collisionBlocks
+   }
 
   update() {
     // this is the blue box
@@ -37,7 +38,7 @@ class Player extends Sprite {
     //   this.hitbox.position.x,
     //   this.hitbox.position.y,
     //   this.hitbox.width,
-    //   this.hitbox.height
+    //   this.hitbox.hei
     // )
     this.checkForVerticalCollisions()
   }
